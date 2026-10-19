@@ -62,6 +62,19 @@ router.get('/files/:id', ah(async (req, res) => {
   res.end(buffer);
 }));
 
+router.get('/public/cover', ah(async (req, res) => {
+  const setting = await one("SELECT value FROM settings WHERE key = 'cover_file_id'");
+  const id = setting ? Number(setting.value) : 0;
+  if (!id) throw notFound('Aucune image de couverture définie.');
+  const file = await readFileRow(id);
+  if (!file) throw notFound('Image de couverture introuvable.');
+  const buffer = await getFileBuffer(file);
+  res.setHeader('Content-Type', file.mime);
+  res.setHeader('Content-Length', buffer.length);
+  res.setHeader('Cache-Control', 'public, max-age=600');
+  res.end(buffer);
+}));
+
 router.get('/public/logo', ah(async (req, res) => {
   const setting = await one("SELECT value FROM settings WHERE key = 'logo_file_id'");
   const id = setting ? Number(setting.value) : 0;

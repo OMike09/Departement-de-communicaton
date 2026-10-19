@@ -3,7 +3,7 @@ import { query, one } from './db.js';
 export const SETTING_KEYS = [
   'app_name', 'app_short', 'institution', 'presentation', 'presentation_extra',
   'contact_email', 'contact_phone', 'contact_address', 'contact_hours',
-  'logo_file_id', 'academic_year', 'require_approval', 'registration_open',
+  'logo_file_id', 'cover_file_id', 'academic_year', 'require_approval', 'registration_open',
   'default_signup_role', 'signup_help', 'modules', 'text_scale_min', 'text_scale_max',
   'demo_mode', 'footer_note', 'max_upload_mb', 'source_pdf_note',
   'notification_types', 'activity_categories', 'data_retention_days',
@@ -55,6 +55,11 @@ export async function publicSettings() {
     const row = await one('SELECT id, filename, mime, size FROM files WHERE id = $1', [Number(s.logo_file_id)]);
     if (row) logo = { id: row.id, url: `/api/public/logo` };
   }
+  let cover = null;
+  if (s.cover_file_id) {
+    const row = await one('SELECT id, filename, mime, size FROM files WHERE id = $1', [Number(s.cover_file_id)]);
+    if (row) cover = { id: row.id, url: `/api/public/cover` };
+  }
   return {
     app_name: s.app_name,
     app_short: s.app_short,
@@ -78,5 +83,6 @@ export async function publicSettings() {
     source_pdf_note: s.source_pdf_note,
     max_upload_mb: Number(s.max_upload_mb || 8),
     logo,
+    cover,
   };
 }

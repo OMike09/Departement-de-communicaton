@@ -53,10 +53,12 @@ export async function renderDashboard(root) {
   root.innerHTML = String(html`
     <section class="hero-banner">
       <div class="hero-banner-main">
-        <div class="hero-media${state.settings.logo ? ' has-logo' : ''}">
-          ${state.settings.logo
-            ? html`<img src="${state.settings.logo.url}" alt="Logo du département">`
-            : html`<span class="hero-media-mark" aria-hidden="true">${icon('building')}</span>`}
+        <div class="hero-media${state.settings.cover ? ' has-photo' : state.settings.logo ? ' has-logo' : ''}">
+          ${state.settings.cover
+            ? html`<img src="${state.settings.cover.url}" alt="Photo de couverture du département">`
+            : state.settings.logo
+              ? html`<img src="${state.settings.logo.url}" alt="Logo du département">`
+              : html`<span class="hero-media-mark" aria-hidden="true">${icon('building')}</span>`}
         </div>
         <div class="hero-copy">
           <div class="hero-eyebrow">Votre espace · ${academicYear()}</div>

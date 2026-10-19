@@ -75,14 +75,18 @@ function shell(activePath) {
   const u = state.user || {};
   const initials = initialsOf(u.full_name);
   const adminItems = adminNav();
-  const logo = state.settings.logo
-    ? html`<img src="${state.settings.logo.url}" alt="Logo du département">`
-    : html`<span class="side-monogram" aria-hidden="true">DC</span>`;
+  const cover = state.settings.cover;
+  const logo = state.settings.logo;
+  const banner = cover
+    ? html`<img src="${cover.url}" alt="Photo de couverture du département">`
+    : logo
+      ? html`<img class="side-banner-logo" src="${logo.url}" alt="Logo du département">`
+      : html`<span class="side-monogram" aria-hidden="true">DC</span>`;
   return html`
   <div class="app-layout">
     <div class="sidebar-scrim hidden" id="sidebar-scrim"></div>
     <aside class="sidebar" id="sidebar" aria-label="Navigation principale">
-      <a class="side-banner" href="#/accueil" aria-label="Accueil du département">${logo}</a>
+      <a class="side-banner${cover ? ' has-photo' : ''}" href="#/accueil" aria-label="Accueil du département">${banner}</a>
       <a class="side-brand" href="#/accueil">
         <span class="side-brand-title">${state.settings.app_short || 'Département de Communication'}</span>
         <span class="side-brand-sub">${state.settings.institution || 'Université de Bouaké'}</span>
@@ -110,6 +114,7 @@ function shell(activePath) {
         <button type="button" class="side-logout" id="logout-btn">
           ${icon('logout')}<span>Déconnexion</span>
         </button>
+        <div class="side-version">Version ${window.APP_BUILD || '2.0.0'}</div>
       </div>
     </aside>
     <div class="app-main">

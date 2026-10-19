@@ -99,6 +99,16 @@ router.put('/admin/settings', requireAuth, requireCsrf, requirePermission('setti
       updates.logo_file_id = String(fileId);
     }
   }
+  if (s.cover_file_id !== undefined) {
+    if (s.cover_file_id === '' || s.cover_file_id === null) updates.cover_file_id = '';
+    else {
+      const fileId = intId(s.cover_file_id);
+      const file = await one('SELECT id, mime FROM files WHERE id = $1', [fileId]);
+      if (!file) throw badRequest('Image de couverture introuvable.');
+      if (!/^image\//.test(file.mime)) throw badRequest('La photo de couverture doit être une image (PNG, JPG ou WEBP).');
+      updates.cover_file_id = String(fileId);
+    }
+  }
   if (!Object.keys(updates).length) throw badRequest('Aucune modification à enregistrer.');
   for (const [key, value] of Object.entries(updates)) await setSetting(key, value);
   await audit(req, 'settings.update', 'settings', null, { keys: Object.keys(updates) });

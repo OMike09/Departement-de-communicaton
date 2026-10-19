@@ -1,5 +1,7 @@
 # Département de Communication — Université de Bouaké
 
+**Version livrée : 2.0.0** — journal des versions : [`CHANGELOG.md`](CHANGELOG.md).
+
 Application web complète du **Département de Communication de l’Université de Bouaké** (Côte d’Ivoire).
 Interface 100 % française, responsive (Android, iPhone, tablette, ordinateur), API REST protégée et base PostgreSQL.
 
@@ -43,10 +45,15 @@ La mise en page reprend, à l’identique dans son organisation, le modèle vali
 - Le reste de l’application (annonces, documents, emplois du temps, résultats, messagerie, demandes,
   administration) conserve les mêmes cartes, tableaux, boutons et formulaires.
 
-Le bandeau latéral affiche automatiquement le **logo officiel** dès qu’il est téléversé dans
-*Administration → Paramètres* ; tant qu’aucun logo n’est fourni, un monogramme neutre « DC » est affiché :
-aucun emblème n’est inventé. L’affichage est testé de 360 px (téléphones Android et iPhone) à 1440 px,
-sans débordement horizontal ; sur mobile, le menu s’ouvre par le bouton en haut à gauche.
+Deux images sont téléversables dans *Administration → Paramètres* :
+
+- le **logo officiel** : il remplace le monogramme « DC » dans la barre latérale ;
+- la **photo de couverture** (image panoramique, 1200 × 500 px conseillé) : elle illustre le bandeau de la
+  barre latérale et la carte d’accueil, exactement à la place du visuel du modèle de référence.
+
+Tant qu’aucune image n’est fournie, l’application affiche un monogramme et une illustration neutres : elle
+ne fabrique ni emblème ni photographie du département. L’affichage est testé de 360 px (téléphones Android
+et iPhone) à 1440 px, sans débordement horizontal ; sur mobile, le menu s’ouvre par le bouton en haut à gauche.
 
 ### Authentification
 - **Téléphone = identifiant** (normalisé), **mot de passe de 6 chiffres** + confirmation + bouton œil.

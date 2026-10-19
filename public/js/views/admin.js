@@ -631,6 +631,7 @@ export async function renderAdminSettings(root) {
   try { notificationTypes = JSON.parse(settings.notification_types || '{}'); } catch {}
   try { activityCategories = JSON.parse(settings.activity_categories || '{}'); } catch {}
   const logoUrl = settings.logo_file_id ? `/api/public/logo?v=${Date.now()}` : '';
+  const coverUrl = settings.cover_file_id ? `/api/public/cover?v=${Date.now()}` : '';
 
   root.innerHTML = String(html`
     <div class="page-header">
@@ -658,6 +659,17 @@ export async function renderAdminSettings(root) {
               <div class="hint">Image PNG, JPG ou WEBP. Le logo officiel doit être fourni par la direction ; l’application n’en crée pas.</div>
             </div>
             ${settings.logo_file_id ? html`<button type="button" class="btn btn-ghost btn-sm" id="remove-logo">Retirer</button>` : ''}
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Photo de couverture (bandeau d’accueil)</label>
+          <div class="flex" style="align-items:flex-start">
+            <div class="cover-preview" id="cover-preview">${coverUrl ? html`<img src="${coverUrl}" alt="Photo de couverture actuelle">` : html`<span class="muted small">Aucune image</span>`}</div>
+            <div style="flex:1;min-width:0">
+              <input type="file" id="cover-input" accept="image/png,image/jpeg,image/webp" class="input">
+              <div class="hint">Image panoramique (idéalement 1200 × 500 px). Elle illustre le bandeau de la barre latérale et la carte d’accueil. Sans image, un visuel neutre est affiché : l’application ne fabrique aucune photo du département.</div>
+              ${settings.cover_file_id ? html`<button type="button" class="btn btn-ghost btn-sm mt1" id="remove-cover">Retirer la photo</button>` : ''}
+            </div>
           </div>
         </div>
       </section>
@@ -902,6 +914,28 @@ export async function renderAdminSettings(root) {
     } catch (err) {
       alertBox.innerHTML = String(html`<div class="alert alert-err">${icon('alert')}<div>${err.message}</div></div>`);
     }
+  });
+  document.getElementById('cover-input').addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const alertBox = document.getElementById('settings-alert');
+    try {
+      const uploaded = await uploadFile(file);
+      await api('/admin/settings', { method: 'PUT', body: { cover_file_id: uploaded.id } });
+      state.settings.cover = { id: uploaded.id, url: '/api/public/cover' };
+      toast('Photo de couverture enregistrée.', 'success');
+      renderAdminSettings(root);
+    } catch (err) {
+      alertBox.innerHTML = String(html`<div class="alert alert-err">${icon('alert')}<div>${err.message}</div></div>`);
+    }
+  });
+  document.getElementById('remove-cover')?.addEventListener('click', async () => {
+    try {
+      await api('/admin/settings', { method: 'PUT', body: { cover_file_id: '' } });
+      state.settings.cover = null;
+      toast('Photo de couverture retirée.', 'success');
+      renderAdminSettings(root);
+    } catch (err) { toast(err.message, 'error'); }
   });
   document.getElementById('remove-logo')?.addEventListener('click', async () => {
     try {
