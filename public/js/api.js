@@ -181,12 +181,11 @@ export function timeAgo(value) {
   return fmtDate(value);
 }
 export function initials(name) {
-  return String(name || '?')
+  const words = String(name || '')
     .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() || '')
-    .join('');
+    .map((w) => w.replace(/[^\p{L}\p{N}]/gu, ''))
+    .filter((w) => /[\p{L}]/u.test(w));
+  return words.slice(0, 2).map((w) => w[0].toUpperCase()).join('') || '?';
 }
 export function fileSize(bytes) {
   const n = Number(bytes) || 0;
@@ -219,6 +218,15 @@ export function statusBadge(status) {
 }
 
 /* ------------------------------ Icônes ------------------------------ */
+/** Année académique affichée : paramètre officiel, sinon année en cours (août → juillet). */
+export function academicYear() {
+  const set = String(state.settings?.academic_year || '').trim();
+  if (set) return set;
+  const now = new Date();
+  const start = now.getMonth() + 1 >= 8 ? now.getFullYear() : now.getFullYear() - 1;
+  return `${start}–${start + 1}`;
+}
+
 const ICONS = {
   home: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-6h6v6"/>',
   bell: '<path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/>',
@@ -273,6 +281,7 @@ const ICONS = {
   save: '<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/>',
   'refresh': '<path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15"/>',
   tag: '<path d="M20.6 13.4 12 22l-9-9V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.2"/>',
+  building: '<path d="M3 21h18"/><path d="M5 21V8l7-4 7 4v13"/><path d="M9.5 21v-4.5h5V21"/><path d="M9 10h.9M14.1 10h.9M9 13.2h.9M14.1 13.2h.9"/>',
 };
 
 export function icon(name, cls = '') {

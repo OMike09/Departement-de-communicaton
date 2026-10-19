@@ -27,12 +27,34 @@ Interface 100 % française, responsive (Android, iPhone, tablette, ordinateur), 
 Les permissions sont vérifiées côté serveur (`requirePermission`), les périmètres sont contrôlés en base
 (`assertScopeFor`) et les audiences des publications sont filtrées en SQL.
 
+### Interface et disposition
+
+La mise en page reprend, à l’identique dans son organisation, le modèle validé par la direction :
+
+- **Barre latérale bleu nuit** avec bandeau visuel en haut (logo du département s’il est téléversé, sinon
+  monogramme « DC »), nom de l’établissement, puis trois groupes de navigation — *Espace personnel*,
+  *Espace académique*, *Administration* — et, en bas, la carte de l’utilisateur connecté et la déconnexion.
+- **En-tête** avec fil d’Ariane (« Département de Communication / page courante »), année académique,
+  cloche de notifications avec compteur, et bloc utilisateur (nom, rôle, initiales).
+- **Carte d’accueil** bleu nuit : visuel du département, surtitre doré « Votre espace · année », message
+  d’accueil personnalisé selon le rôle, bouton doré principal et action secondaire pour les gestionnaires.
+- **Cartes chiffrées** blanches : pastille d’icône, valeur, libellé, précision (utilisateurs, publications,
+  documents, demandes…), calculées uniquement à partir de données réelles.
+- Le reste de l’application (annonces, documents, emplois du temps, résultats, messagerie, demandes,
+  administration) conserve les mêmes cartes, tableaux, boutons et formulaires.
+
+Le bandeau latéral affiche automatiquement le **logo officiel** dès qu’il est téléversé dans
+*Administration → Paramètres* ; tant qu’aucun logo n’est fourni, un monogramme neutre « DC » est affiché :
+aucun emblème n’est inventé. L’affichage est testé de 360 px (téléphones Android et iPhone) à 1440 px,
+sans débordement horizontal ; sur mobile, le menu s’ouvre par le bouton en haut à gauche.
+
 ### Authentification
 - **Téléphone = identifiant** (normalisé), **mot de passe de 6 chiffres** + confirmation + bouton œil.
 - Hachage **PBKDF2-HMAC-SHA256** (210 000 itérations, sel aléatoire).
 - Inscriptions **validées par l’administration** (option activable), approbation / rejet / suspension.
 - Réinitialisation par **lien à usage unique** (1 heure) généré par l’administration — aucun faux OTP SMS.
-- **Limitation des tentatives** par compte et par adresse IP, verrouillage temporaire après 5 échecs.
+- **Limitation des tentatives** : 10 essais par compte et 120 par adresse IP toutes les 15 minutes
+  (limite IP volontairement large, un campus ou un opérateur mobile partageant une même adresse).
 - Sessions en base, cookie `HttpOnly` + `SameSite=Lax` + `Secure` en production, jeton **CSRF** exigé pour
   toute mutation, vérification d’origine, en-têtes de sécurité (CSP, Helmet).
 

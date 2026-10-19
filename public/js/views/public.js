@@ -23,11 +23,13 @@ export function publicHeader(active = '') {
         <a href="#/" data-scroll="documents-publics">Documents</a>
         <a href="#/" data-scroll="vie-departement">Vie du département</a>
         <a href="#/" data-scroll="contact">Contact</a>
-        ${state.user
-          ? html`<a href="#/accueil" class="btn btn-primary btn-sm" style="margin-left:.4rem">Mon espace</a>`
-          : html`<a href="#/connexion" class="btn btn-secondary btn-sm" style="margin-left:.4rem">Connexion</a>
-              ${state.settings.registration_open ? html`<a href="#/inscription" class="btn btn-primary btn-sm">Créer un compte</a>` : ''}`}
       </nav>
+      <div class="topbar-auth">
+        ${state.user
+          ? html`<a href="#/accueil" class="btn btn-primary btn-sm">Mon espace</a>`
+          : html`<a href="#/connexion" class="btn btn-secondary btn-sm">Connexion</a>
+              ${state.settings.registration_open ? html`<a href="#/inscription" class="btn btn-primary btn-sm">Créer un compte</a>` : ''}`}
+      </div>
     </div>
   </header>`;
 }

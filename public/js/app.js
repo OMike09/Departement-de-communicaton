@@ -1,6 +1,6 @@
 import {
   state, api, loadMe, loadStructure, loadCategories, can, html, icon,
-  toast, navigate, playSound, browserNotify,
+  toast, navigate, playSound, browserNotify, academicYear,
 } from './api.js';
 import { renderLanding, renderLogin, renderRegister, renderForgot, renderReset } from './views/public.js';
 import { renderDashboard } from './views/dashboard.js';
@@ -20,20 +20,33 @@ import {
 
 const app = document.getElementById('app');
 
-const NAV = [
-  { section: 'Principal', items: [
-    { path: '/accueil', label: 'Accueil', icon: 'home' },
-    { path: '/annonces', label: 'Annonces', icon: 'megaphone' },
-    { path: '/notifications', label: 'Notifications', icon: 'bell', badge: 'notif' },
-    { path: '/messages', label: 'Messagerie', icon: 'message', badge: 'msg', module: 'messages' },
-    { path: '/documents', label: 'Documents', icon: 'folder', module: 'documents' },
-    { path: '/emplois-du-temps', label: "Emplois du temps", icon: 'calendar', module: 'timetables' },
-    { path: '/calendrier', label: 'Calendrier', icon: 'clock', module: 'timetables' },
-    { path: '/resultats', label: 'Résultats', icon: 'award', module: 'results' },
-    { path: '/demandes', label: 'Demandes administratives', icon: 'book', module: 'requests' },
-    { path: '/vie-du-departement', label: 'Vie du département', icon: 'graduation', module: 'activities' },
-  ] },
+const NAV_GROUPS = [
+  {
+    title: 'Espace personnel',
+    items: [
+      { path: '/accueil', label: "Vue d'ensemble", icon: 'home' },
+      { path: '/notifications', label: 'Notifications', icon: 'bell', badge: 'notif' },
+      { path: '/messages', label: 'Messages privés', icon: 'message', badge: 'msg', module: 'messages' },
+      { path: '/profil', label: 'Mon profil', icon: 'user' },
+    ],
+  },
+  {
+    title: 'Espace académique',
+    items: [
+      { path: '/annonces', label: 'Annonces', icon: 'megaphone' },
+      { path: '/documents', label: 'Documents', icon: 'folder', module: 'documents' },
+      { path: '/emplois-du-temps', label: 'Emplois du temps', icon: 'calendar', module: 'timetables' },
+      { path: '/calendrier', label: 'Calendrier', icon: 'clock', module: 'timetables' },
+      { path: '/resultats', label: 'Résultats', icon: 'award', module: 'results' },
+      { path: '/demandes', label: 'Demandes administratives', icon: 'book', module: 'requests' },
+      { path: '/vie-du-departement', label: 'Vie du département', icon: 'graduation', module: 'activities' },
+    ],
+  },
 ];
+
+function allNavItems() {
+  return NAV_GROUPS.flatMap((g) => g.items);
+}
 
 function adminNav() {
   const items = [];
@@ -47,57 +60,79 @@ function adminNav() {
   return items;
 }
 
+function navLink(item, activePath) {
+  const active = activePath === item.path || activePath.startsWith(item.path + '/');
+  return html`
+    <a href="#${item.path}" class="sidebar-link ${active ? 'active' : ''}" data-nav${active ? ' aria-current="page"' : ''}>
+      ${icon(item.icon)}<span class="sidebar-link-label">${item.label}</span>
+      ${item.badge === 'notif' ? html`<span class="count ${state.notif.unread ? '' : 'hidden'}" id="nav-notif-count">${state.notif.unread}</span>` : ''}
+      ${item.badge === 'msg' ? html`<span class="count hidden" id="nav-msg-count">0</span>` : ''}
+    </a>`;
+}
+
 /* ------------------------------ Coquille connectée ------------------------------ */
 function shell(activePath) {
-  const items = NAV[0].items.filter((i) => !i.module || state.modules?.[i.module] !== false);
+  const u = state.user || {};
+  const initials = initialsOf(u.full_name);
   const adminItems = adminNav();
-  const logo = state.settings.logo ? html`<img class="brand-logo" src="${state.settings.logo.url}" alt="Logo du département">` : html`<img class="brand-logo" src="/icons/icon-192.png" alt="">`;
+  const logo = state.settings.logo
+    ? html`<img src="${state.settings.logo.url}" alt="Logo du département">`
+    : html`<span class="side-monogram" aria-hidden="true">DC</span>`;
   return html`
   <div class="app-layout">
     <div class="sidebar-scrim hidden" id="sidebar-scrim"></div>
     <aside class="sidebar" id="sidebar" aria-label="Navigation principale">
-      <a class="sidebar-brand brand" href="#/accueil">
-        ${logo}
-        <div class="brand-text">
-          <div class="brand-title">${state.settings.app_short || 'Département de Communication'}</div>
-          <div class="brand-sub">${state.settings.institution || 'Université de Bouaké'}</div>
-        </div>
+      <a class="side-banner" href="#/accueil" aria-label="Accueil du département">${logo}</a>
+      <a class="side-brand" href="#/accueil">
+        <span class="side-brand-title">${state.settings.app_short || 'Département de Communication'}</span>
+        <span class="side-brand-sub">${state.settings.institution || 'Université de Bouaké'}</span>
       </a>
       <div class="sidebar-scroll">
-        <div class="sidebar-section">Principal</div>
-        ${items.map((item) => html`
-          <a href="#${item.path}" class="sidebar-link ${activePath === item.path || activePath.startsWith(item.path + '/') ? 'active' : ''}" data-nav>
-            ${icon(item.icon)}<span>${item.label}</span>
-            ${item.badge === 'notif' ? html`<span class="count ${state.notif.unread ? '' : 'hidden'}" id="nav-notif-count">${state.notif.unread}</span>` : ''}
-            ${item.badge === 'msg' ? html`<span class="count hidden" id="nav-msg-count">0</span>` : ''}
-          </a>`)}
+        ${NAV_GROUPS.map((group) => {
+          const items = group.items.filter((i) => !i.module || state.modules?.[i.module] !== false);
+          if (!items.length) return '';
+          return html`
+            <div class="sidebar-section">${group.title}</div>
+            ${items.map((item) => navLink(item, activePath))}`;
+        })}
         ${adminItems.length ? html`
           <div class="sidebar-section">Administration</div>
-          ${adminItems.map((item) => html`
-            <a href="#${item.path}" class="sidebar-link ${activePath === item.path ? 'active' : ''}" data-nav>
-              ${icon(item.icon)}<span>${item.label}</span>
-            </a>`)}
-        ` : ''}
+          ${adminItems.map((item) => navLink(item, activePath))}` : ''}
       </div>
-      <div class="sidebar-footer">
-        <div>${state.settings.app_name || 'Département de Communication'}</div>
-        <div style="margin-top:.2rem">Année académique : ${state.settings.academic_year || 'à compléter'}</div>
+      <div class="sidebar-foot">
+        <button type="button" class="side-user" data-profile aria-label="Ouvrir mon profil">
+          <span class="side-avatar">${initials}</span>
+          <span class="side-user-meta">
+            <strong>${u.full_name || ''}</strong>
+            <span>${u.role_name || ''}</span>
+          </span>
+        </button>
+        <button type="button" class="side-logout" id="logout-btn">
+          ${icon('logout')}<span>Déconnexion</span>
+        </button>
       </div>
     </aside>
     <div class="app-main">
       <header class="app-topbar">
         <button type="button" class="btn btn-icon hamburger" id="hamburger" aria-label="Ouvrir le menu">${icon('menu')}</button>
-        <div class="topbar-title" id="topbar-title">${titleFor(activePath)}</div>
+        <nav class="topbar-crumbs" aria-label="Fil d’Ariane">
+          <span class="crumb-root">${state.settings.app_short || 'Département de Communication'}</span>
+          <span class="crumb-sep" aria-hidden="true">/</span>
+          <strong id="topbar-title">${titleFor(activePath)}</strong>
+        </nav>
         <div class="topbar-actions">
-          <a href="#/notifications" class="btn btn-icon notif-btn" aria-label="Notifications" title="Notifications">
+          <span class="topbar-year" title="Année académique en cours">${academicYear()}</span>
+          <a href="#/notifications" class="topbar-bell" aria-label="Notifications" title="Notifications">
             ${icon('bell')}
             <span class="notif-badge ${state.notif.unread ? '' : 'hidden'}" id="top-notif-count">${state.notif.unread}</span>
           </a>
-          <button type="button" class="user-menu-btn" id="user-menu-btn" aria-label="Mon profil">
-            <span class="avatar">${initialsOf(state.user?.full_name)}</span>
-            <span class="user-meta"><strong>${state.user?.full_name || ''}</strong><span>${state.user?.role_name || ''}</span></span>
+          <button type="button" class="topbar-user" data-profile aria-label="Mon profil">
+            <span class="topbar-user-meta">
+              <strong>${u.full_name || ''}</strong>
+              <span>${u.role_name || ''}</span>
+            </span>
+            <span class="side-avatar side-avatar-sm">${initials}</span>
           </button>
-          <button type="button" class="btn btn-icon" id="logout-btn" aria-label="Se déconnecter" title="Se déconnecter">${icon('logout')}</button>
         </div>
       </header>
       <main id="view" class="page" tabindex="-1"></main>
@@ -106,10 +141,15 @@ function shell(activePath) {
 }
 
 function initialsOf(name) {
-  return String(name || '?').split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join('');
+  const words = String(name || '')
+    .split(/\s+/)
+    .map((w) => w.replace(/[^\p{L}\p{N}]/gu, ''))
+    .filter((w) => /[\p{L}]/u.test(w));
+  const picked = words.slice(0, 2).map((w) => w[0].toUpperCase()).join('');
+  return picked || '?';
 }
 function titleFor(path) {
-  const all = [...NAV[0].items, ...adminNav()];
+  const all = [...allNavItems(), ...adminNav()];
   const found = all.find((i) => path === i.path || path.startsWith(i.path + '/'));
   if (path.startsWith('/annonces/nouvelle')) return 'Nouvelle publication';
   if (path.match(/^\/annonces\/\d+\/modifier/)) return 'Modifier la publication';
@@ -124,7 +164,7 @@ function bindShell() {
   });
   document.getElementById('sidebar-scrim')?.addEventListener('click', closeSidebar);
   document.querySelectorAll('[data-nav]').forEach((a) => a.addEventListener('click', closeSidebar));
-  document.getElementById('user-menu-btn')?.addEventListener('click', () => navigate('/profil'));
+  document.querySelectorAll('[data-profile]').forEach((el) => el.addEventListener('click', () => navigate('/profil')));
   document.getElementById('logout-btn')?.addEventListener('click', async () => {
     try {
       await api('/auth/logout', { method: 'POST' });

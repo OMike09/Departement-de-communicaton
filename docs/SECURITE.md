@@ -12,8 +12,10 @@
   (`SESSION_TTL_HOURS`, 24 h par défaut).
 - **CSRF** : jeton unique par session, exigé via l’en-tête `X-CSRF-Token` sur toute mutation.
 - **Vérification d’origine** complémentaire sur les requêtes mutantes.
-- **Limitation** : 20 tentatives par IP et 10 par numéro sur 15 minutes ; verrouillage du compte après
-  5 échecs pendant 15 minutes. Les compteurs sont en mémoire par instance (voir limites).
+- **Limitation** : 10 tentatives par numéro et 120 par adresse IP sur 15 minutes ; verrouillage du compte
+  après 5 échecs pendant 15 minutes. La limite par IP est volontairement large car un campus ou un opérateur
+  mobile peut partager une même adresse entre de nombreux utilisateurs. Les compteurs sont en mémoire par
+  instance (voir limites).
 - Réinitialisation : lien à usage unique, empreinte en base, expiration 1 heure, toutes les sessions du
   compte sont fermées après usage. **Aucun OTP SMS** n’est simulé.
 

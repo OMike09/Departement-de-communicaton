@@ -121,7 +121,11 @@ router.post('/login', ah(async (req, res) => {
   const pwd = String(req.body.password ?? '');
   if (!/^\d{6}$/.test(pwd)) throw badRequest('Le mot de passe doit contenir exactement 6 chiffres.', 'password_rule');
   const ip = String(req.ip || '');
-  if (!rateLimit(`login:${ip}`, { max: 20, windowMs: 15 * 60 * 1000 }) ||
+  // Deux limites complémentaires :
+  //  - par compte (10 essais / 15 min) : protège contre l'attaque ciblée ;
+  //  - par adresse IP (120 / 15 min) : garde-fou large, car un campus ou un
+  //    opérateur mobile peut partager une même IP entre de nombreux étudiants.
+  if (!rateLimit(`login:${ip}`, { max: 120, windowMs: 15 * 60 * 1000 }) ||
       !rateLimit(`login:${phone}`, { max: 10, windowMs: 15 * 60 * 1000 })) {
     throw badRequest('Trop de tentatives de connexion. Réessayez dans quelques minutes.');
   }

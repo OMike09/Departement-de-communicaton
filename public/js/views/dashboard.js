@@ -1,6 +1,6 @@
 import {
   state, api, html, icon, fmtDate, fmtDateTime, fmtTime, timeAgo, can, canAny,
-  statusBadge, emptyState, loading, initials,
+  statusBadge, emptyState, loading, initials, academicYear,
 } from '../api.js';
 
 function greeting() {
@@ -38,25 +38,43 @@ function completionItems() {
   return items;
 }
 
+function heroSubtitle(u) {
+  const role = u?.role_slug;
+  if (role === 'chef') return 'Supervisez le département, validez les comptes et suivez les activités en un seul endroit.';
+  if (role === 'secretariat') return 'Publiez les informations officielles, gérez les documents et traitez les demandes administratives.';
+  if (role === 'enseignant') return 'Partagez vos cours et supports, publiez vos consignes et suivez la consultation de vos contenus.';
+  if (role === 'responsable_niveau' || role === 'responsable_parcours') return 'Gérez les informations, documents et emplois du temps de votre périmètre académique.';
+  if (role === 'etudiant') return 'Consultez les annonces, vos cours, vos emplois du temps et vos résultats officiels.';
+  return 'Retrouvez les informations, documents et échanges de votre département en un seul endroit.';
+}
+
 export async function renderDashboard(root) {
   const u = state.user;
   root.innerHTML = String(html`
-    <div class="page-header">
-      <div>
-        <h1 class="page-title">${greeting()}, ${u.full_name.split(' ')[0]}</h1>
-        <p class="page-sub">${u.role_name}${u.group_name ? ` · ${u.group_name}` : ''} · ${state.settings.app_short || 'Département de Communication'}${state.settings.academic_year ? ` · ${state.settings.academic_year}` : ''}</p>
+    <section class="hero-banner">
+      <div class="hero-banner-main">
+        <div class="hero-media${state.settings.logo ? ' has-logo' : ''}">
+          ${state.settings.logo
+            ? html`<img src="${state.settings.logo.url}" alt="Logo du département">`
+            : html`<span class="hero-media-mark" aria-hidden="true">${icon('building')}</span>`}
+        </div>
+        <div class="hero-copy">
+          <div class="hero-eyebrow">Votre espace · ${academicYear()}</div>
+          <h1 class="hero-title">${greeting()}, ${(u.full_name || '').split(' ')[0]} 👋</h1>
+          <p class="hero-sub">${heroSubtitle(u)}</p>
+        </div>
       </div>
-      <div class="page-actions">
-        ${can('publications.create') ? html`<a class="btn btn-primary" href="#/annonces/nouvelle">${icon('plus')} Nouvelle publication</a>` : ''}
-        ${can('documents.upload') ? html`<a class="btn btn-secondary" href="#/documents">${icon('upload')} Déposer un document</a>` : ''}
+      <div class="hero-cta">
+        <a class="btn-hero" href="#/annonces">Voir les annonces</a>
+        ${can('publications.create') ? html`<a class="btn-hero-ghost" href="#/annonces/nouvelle">${icon('plus')} Nouvelle publication</a>` : ''}
       </div>
-    </div>
+    </section>
 
     ${state.settings.demo_mode ? html`<div class="alert alert-warn">${icon('alert')}<div><strong>Mode démonstration.</strong> Les données affichées sont fictives et destinées aux tests. Désactivez ce mode dans les paramètres avant la mise en service réelle.</div></div>` : ''}
 
     <div id="dash-stats" class="stat-grid">
-      <div class="stat-card"><div class="stat-label">Notifications</div><div class="stat-value">${state.notif.unread}</div><div class="stat-note">non lues</div></div>
-      <div class="stat-card"><div class="stat-label">Profil</div><div class="stat-value" style="font-size:1.15rem;padding:.55rem 0">${u.role_name}</div><div class="stat-note">${u.level_id ? 'Niveau et parcours associés' : 'Compte départemental'}</div></div>
+      <div class="stat-card"><div class="stat-icon">${icon('bell')}</div><div class="stat-value">${state.notif.unread}</div><div class="stat-label">Notifications non lues</div></div>
+      <div class="stat-card"><div class="stat-icon">${icon('shield')}</div><div class="stat-value stat-value-sm">${u.role_name}</div><div class="stat-label">Votre rôle</div><div class="stat-note">${u.level_id ? 'Niveau et parcours associés' : 'Compte départemental'}</div></div>
     </div>
 
     <div class="dash-grid">
@@ -104,10 +122,10 @@ export async function renderDashboard(root) {
     if (can('stats.view')) {
       const s = await api('/stats/overview');
       statsBox.innerHTML = String(html`
-        <div class="stat-card accent"><div class="stat-label">Comptes actifs</div><div class="stat-value">${s.byStatus.active}</div><div class="stat-note">${s.byStatus.pending} en attente</div></div>
-        <div class="stat-card"><div class="stat-label">Publications</div><div class="stat-value">${s.publications.published}</div><div class="stat-note">${s.publications.last30} ce mois</div></div>
-        <div class="stat-card"><div class="stat-label">Documents</div><div class="stat-value">${s.documents.active}</div><div class="stat-note">dans la bibliothèque</div></div>
-        <div class="stat-card"><div class="stat-label">Demandes en attente</div><div class="stat-value">${s.requests.recue + s.requests.en_cours}</div><div class="stat-note">${s.requests.traitee} traitées</div></div>`);
+        <div class="stat-card"><div class="stat-icon">${icon('users')}</div><div class="stat-value">${s.byStatus.active}</div><div class="stat-label">Utilisateurs</div><div class="stat-note">${s.byStatus.pending} compte(s) à valider</div></div>
+        <div class="stat-card"><div class="stat-icon">${icon('megaphone')}</div><div class="stat-value">${s.publications.published}</div><div class="stat-label">Publications</div><div class="stat-note">${s.publications.last30} ce mois</div></div>
+        <div class="stat-card"><div class="stat-icon">${icon('folder')}</div><div class="stat-value">${s.documents.active}</div><div class="stat-label">Documents</div><div class="stat-note">dans la bibliothèque</div></div>
+        <div class="stat-card"><div class="stat-icon">${icon('book')}</div><div class="stat-value">${s.requests.recue + s.requests.en_cours}</div><div class="stat-label">Demandes en attente</div><div class="stat-note">${s.requests.traitee} traitée(s)</div></div>`);
     } else {
       const [notif, docs, reqs, msg] = await Promise.all([
         api('/notifications/count').catch(() => ({ unread: state.notif.unread })),
@@ -116,7 +134,7 @@ export async function renderDashboard(root) {
         api('/messages/unread-count').catch(() => ({ unread: 0 })),
       ]);
       statsBox.innerHTML = String(html`
-        <div class="stat-card accent"><div class="stat-label">Notifications non lues</div><div class="stat-value">${notif.unread}</div><div class="stat-note"><a href="#/notifications" style="color:#d5e3f2">Consulter</a></div></div>
+        <div class="stat-card"><div class="stat-icon">${icon('bell')}</div><div class="stat-value">${notif.unread}</div><div class="stat-label">Notifications non lues</div><div class="stat-note"><a href="#/notifications">Consulter</a></div></div>
         <div class="stat-card"><div class="stat-label">Documents accessibles</div><div class="stat-value">${docs.total}</div><div class="stat-note"><a href="#/documents">Bibliothèque</a></div></div>
         <div class="stat-card"><div class="stat-label">Mes demandes</div><div class="stat-value">${reqs.total || 0}</div><div class="stat-note">${reqs.summary?.recue || 0} en attente de traitement</div></div>
         <div class="stat-card"><div class="stat-label">Messages non lus</div><div class="stat-value">${msg.unread}</div><div class="stat-note"><a href="#/messages">Messagerie</a></div></div>`);
