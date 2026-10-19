@@ -1,0 +1,7 @@
+node_modules/
+storage/pglite/
+storage/uploads/
+.env
+*.log
+.DS_Store
+backups/

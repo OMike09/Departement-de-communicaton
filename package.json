@@ -1,0 +1,27 @@
+{
+  "name": "departement-communication-ub",
+  "version": "1.0.0",
+  "description": "Application web du Département de Communication — Université de Bouaké (Node.js, Express, PostgreSQL)",
+  "type": "module",
+  "main": "server/index.js",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "migrate": "node scripts/migrate.js",
+    "create-admin": "node scripts/create-admin.js",
+    "seed:demo": "node scripts/seed-demo.js",
+    "test": "node tests/api.test.js"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.2.17",
+    "cookie-parser": "^1.4.7",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0",
+    "morgan": "^1.10.0",
+    "pg": "^8.13.1"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Département de Communication — Université de Bouaké</title>
+  <meta name="description" content="Espace officiel du Département de Communication de l'Université de Bouaké : annonces, documents, emplois du temps, résultats et démarches administratives.">
+  <meta name="theme-color" content="#123a63">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Département Communication">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/icons/favicon-32.png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div id="app">
+    <div class="loader" role="status" aria-live="polite">
+      <span class="spinner" aria-hidden="true"></span>
+      <span>Chargement de l’application…</span>
+    </div>
+  </div>
+  <div id="modal-root"></div>
+  <div id="toast-root" class="toasts" aria-live="polite" aria-atomic="false"></div>
+  <noscript>
+    <div style="padding:2rem;font-family:sans-serif;max-width:640px;margin:0 auto">
+      <h1>JavaScript requis</h1>
+      <p>Cette application a besoin de JavaScript pour fonctionner. Activez-le dans votre navigateur puis rechargez la page.</p>
+    </div>
+  </noscript>
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>
